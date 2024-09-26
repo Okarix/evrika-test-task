@@ -1,20 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useCurrencyStore } from '../store/currency'
 
+interface Currency {
+  Value: number
+  Nominal: number
+}
+
+interface RateItem {
+  key: string
+  rate: number
+}
+
 const store = useCurrencyStore()
 
-const filteredRates = computed(() => {
-  const baseRate = store.rates[store.baseCurrency]?.Value || 1
-  const baseNominal = store.rates[store.baseCurrency]?.Nominal || 1
+const filteredRates = computed<RateItem[]>(() => {
+  const baseRate = store.rates[store.baseCurrency]?.Value ?? 1
+  const baseNominal = store.rates[store.baseCurrency]?.Nominal ?? 1
 
   return Object.entries(store.rates)
     .filter(([key]) => store.currencies.includes(key))
-    .map(([key, currency]) => {
+    .map(([key, currency]: [string, Currency]) => {
       const rate = baseRate / baseNominal / (currency.Value / currency.Nominal)
       return {
         key,
-        rate: rate.toFixed(4)
+        rate
       }
     })
     .sort((a, b) => b.rate - a.rate)
